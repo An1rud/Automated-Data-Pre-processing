@@ -56,6 +56,11 @@ Here is a simple example of how to use the application:
 3. Remove outliers from the numeric columns.
 4. Download the cleaned data.
 
+## Data
+
+Any Excel or csv file can be used.
+I have provided a [sample data](sample data) 
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
