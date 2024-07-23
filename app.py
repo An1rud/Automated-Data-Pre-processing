@@ -4,6 +4,7 @@ import numpy as np
 import base64
 import io
 
+# Function to load and display data head
 def load_data(file):
     if file is not None:
         try:
@@ -19,7 +20,7 @@ def load_data(file):
             st.write(df.head())
             st.write(f'**Data Shape**: {df.shape}')
 
-             # Display data description
+            # Display data description
             st.subheader('Data Description')
             st.write(df.describe(include='all'))  # include='all' provides description for all types of columns
 
@@ -48,6 +49,7 @@ def load_data(file):
             return None
     return None
 
+# Function to remove duplicates
 def remove_duplicates(df):
     if df is not None:
         original_len = len(df)
@@ -58,6 +60,7 @@ def remove_duplicates(df):
         return df_cleaned
     return df
 
+# Function to convert DataFrame to CSV and generate download link
 def get_csv_download_link(df, filename="cleaned_data.csv"):
     csv = df.to_csv(index=False)
     b64 = base64.b64encode(csv.encode()).decode()  # Convert CSV to base64
@@ -111,6 +114,8 @@ def remove_outliers_iqr(df, columns):
     df_no_outliers = df.copy()
     if df_no_outliers is not None and isinstance(columns, (list, pd.Index)) and len(columns) > 0:
         columns = list(columns)  # Ensure columns is a list
+        any_outliers_removed = False
+        
         for col in columns:
             if df_no_outliers[col].dtype in ['float64', 'int64']:
                 Q1 = df_no_outliers[col].quantile(0.25)
@@ -121,38 +126,40 @@ def remove_outliers_iqr(df, columns):
                 before_shape = df_no_outliers.shape
                 df_no_outliers = df_no_outliers[(df_no_outliers[col] >= lower_bound) & (df_no_outliers[col] <= upper_bound)]
                 after_shape = df_no_outliers.shape
-                st.write(f"Removed outliers in column '{col}' using IQR. Rows before: {before_shape[0]}, Rows after: {after_shape[0]}")
-        st.write("After removing outliers:")
-        st.write(df_no_outliers.head())
+                if before_shape != after_shape:
+                    any_outliers_removed = True
+                    st.write(f"Removed outliers in column '{col}' using IQR. Rows before: {before_shape[0]}, Rows after: {after_shape[0]}")
+        
+        if not any_outliers_removed:
+            st.write("No outliers found in the selected columns.")
+        else:
+            st.write("After removing outliers:")
+            st.write(df_no_outliers.head())
+        
     return df_no_outliers
 
-# Function to apply all preprocessing steps together
+# Function to apply all preprocessing steps at once
 def apply_all_functions(df):
-    if df is not None:
-        df = remove_duplicates(df)
-
-        # Fill missing values with mean
-        numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns
-        df_filled_mean = fill_missing_with_mean(df, numeric_columns)
-
-        # Fill missing values with median
-        numeric_columns = df_filled_mean.select_dtypes(include=['float64', 'int64']).columns
-        df_filled_median = fill_missing_with_median(df_filled_mean, numeric_columns)
-
-        # Fill missing values with mode
-        object_columns = df_filled_median.select_dtypes(include=['object']).columns
-        df_filled_mode = fill_missing_with_mode(df_filled_median, object_columns)
-
-        # Remove outliers
-        numeric_columns = df_filled_mode.select_dtypes(include=['float64', 'int64']).columns
-        df_no_outliers = remove_outliers_iqr(df_filled_mode, numeric_columns)
-
-        return df_no_outliers
+    df = remove_duplicates(df)
+    
+    numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns
+    df = fill_missing_with_mean(df, numeric_columns)
+    df = fill_missing_with_median(df, numeric_columns)
+    
+    object_columns = df.select_dtypes(include=['object']).columns
+    df = fill_missing_with_mode(df, object_columns)
+    
+    df = remove_outliers_iqr(df, numeric_columns)
+    
     return df
 
+# Main function
 def main():
-    st.title('Automated Data Pre-processing')
-    
+    st.title('Automated Pre-processing')
+    st.markdown("""
+    ## Automated Pre-processing of Data
+    Upload your dataset and select columns to remove, handle missing values, duplicates, and outliers.
+    """)
 
     # File uploader
     uploaded_file = st.file_uploader("Upload a CSV or Excel file here!", type=['csv', 'xlsx'])
@@ -162,55 +169,75 @@ def main():
         df = load_data(uploaded_file)
 
         if df is not None:
-            # Prepare placeholders for processed DataFrames
-            df_filled_mean = df.copy()
-            df_filled_median = None
-            df_filled_mode = None
-            df_no_outliers = None
+            # Dropdown menu for Custom and All@once options
+            option = st.selectbox('Choose an option', ('Custom', 'All@once'))
 
-            # Fill missing values with mean
-            if df_filled_mean is not None:
+            if option == 'Custom':
+                # Remove duplicates
+                df = remove_duplicates(df)
+
+                # Fill missing values with mean
                 st.subheader('Fill Missing Values with Mean')
-                numeric_columns = df_filled_mean.select_dtypes(include=['float64', 'int64']).columns
+                numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns
                 selected_columns_mean = st.multiselect("Select columns to fill missing values with mean", numeric_columns)
+                
                 if st.button("Fill Missing Values with Mean"):
-                    df_filled_mean = fill_missing_with_mean(df_filled_mean, selected_columns_mean)
+                    df_mean_filled = fill_missing_with_mean(df, selected_columns_mean)
+                    
+                    # Store mean-filled DataFrame in session state
+                    st.session_state.df_mean_filled = df_mean_filled
 
-            # Fill missing values with median
-            if df_filled_mean is not None:
-                df_filled_median = df_filled_mean.copy()
+                # Fill missing values with median
                 st.subheader('Fill Missing Values with Median')
-                numeric_columns = df_filled_mean.select_dtypes(include=['float64', 'int64']).columns
-                selected_columns_median = st.multiselect("Select columns to fill missing values with median", numeric_columns)
-                if st.button("Fill Missing Values with Median"):
-                    df_filled_median = fill_missing_with_median(df_filled_median, selected_columns_median)
+                if 'df_mean_filled' in st.session_state:
+                    numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns
+                    selected_columns_median = st.multiselect("Select columns to fill missing values with median", numeric_columns)
+                    
+                    if st.button("Fill Missing Values with Median"):
+                        df_median_filled = fill_missing_with_median(st.session_state.df_mean_filled, selected_columns_median)
+                        
+                        # Store median-filled DataFrame in session state
+                        st.session_state.df_median_filled = df_median_filled
 
-            # Fill missing values with mode
-            if df_filled_median is not None:
-                df_filled_mode = df_filled_median.copy()
+                # Fill missing values with mode
                 st.subheader('Fill Missing Values with Mode')
-                object_columns = df_filled_median.select_dtypes(include=['object']).columns
-                selected_columns_mode = st.multiselect("Select columns to fill missing values with mode", object_columns)
-                if st.button("Fill Missing Values with Mode"):
-                    df_filled_mode = fill_missing_with_mode(df_filled_mode, selected_columns_mode)
+                if 'df_median_filled' in st.session_state:
+                    object_columns = df.select_dtypes(include=['object']).columns
+                    selected_columns_mode = st.multiselect("Select columns to fill missing values with mode", object_columns)
+                    
+                    if st.button("Fill Missing Values with Mode"):
+                        df_mode_filled = fill_missing_with_mode(st.session_state.df_median_filled, selected_columns_mode)
+                        st.subheader('Handled Missing Values')
+                        st.write(df_mode_filled.head())
+                        st.write(f'**Data Shape**: {df_mode_filled.shape}')
 
-            # Remove outliers
-            if df_filled_mode is not None:
-                df_no_outliers = df_filled_mode.copy()
+                        # Provide download link for the DataFrame with mode-filled values
+                        st.markdown(get_csv_download_link(df_mode_filled, filename="Handled Missing Values.csv"), unsafe_allow_html=True)
+                        
+                        # Store mode-filled DataFrame in session state
+                        st.session_state.df_mode_filled = df_mode_filled
+
+                # Remove outliers
                 st.subheader('Remove Outliers')
-                numeric_columns = df_filled_mode.select_dtypes(include=['float64', 'int64']).columns
-                if st.button("Remove Outliers"):
-                    df_no_outliers = remove_outliers_iqr(df_filled_mode, numeric_columns)
+                if 'df_mode_filled' in st.session_state:
+                    numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns
+                    selected_columns_outliers = st.multiselect("Select columns to remove outliers", numeric_columns)
+                    
+                    if st.button("Remove Outliers"):
+                        df_final = remove_outliers_iqr(st.session_state.df_mode_filled, selected_columns_outliers)
+                        st.write(f'**Data Shape**: {df_final.shape}')
 
-            # Apply all functions together
-            st.subheader('Apply All Functions Together')
-            if st.button("Apply All Functions Together"):
-                df_all_functions = apply_all_functions(df)
-                st.write("After applying all functions together:")
-                st.write(df_all_functions.head())
-                st.write(f'Processed Data Shape: {df_all_functions.shape}')
-                # Provide download link for final combined DataFrame
-                st.markdown(get_csv_download_link(df_all_functions, filename="final_combined_data.csv"), unsafe_allow_html=True)
+                        # Provide download link for final DataFrame
+                        st.markdown(get_csv_download_link(df_final, filename="processed_data.csv"), unsafe_allow_html=True)
+
+            elif option == 'All@once':
+                df_final = apply_all_functions(df)
+                st.write("After applying all functions:")
+                st.write(df_final.head())
+                st.write(f'**Data Shape**: {df_final.shape}')
+
+                # Provide download link for final DataFrame
+                st.markdown(get_csv_download_link(df_final, filename="processed_data.csv"), unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
