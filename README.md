@@ -59,7 +59,7 @@ Here is a simple example of how to use the application:
 ## Data
 
 Any Excel or csv file can be used.
-I have provided a [sample data](sample data) 
+I have provided a [Sample Data](sample_data) which you can check out
 
 ## License
 
