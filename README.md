@@ -15,7 +15,7 @@ Welcome to the Automated Data Pre-processing application! This Streamlit applica
 
 ## Demo
 
-![Working of the application](one.gif)
+![Working of the application](gif/one.gif)
 
 ## Installation
 
@@ -59,9 +59,3 @@ Here is a simple example of how to use the application:
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
----
-
-Thank you for using the Automated Data Pre-processing application!
-```
-
