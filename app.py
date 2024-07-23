@@ -4,7 +4,6 @@ import numpy as np
 import base64
 import io
 
-# Function to load and display data head
 def load_data(file):
     if file is not None:
         try:
@@ -20,17 +19,13 @@ def load_data(file):
             st.write(df.head())
             st.write(f'**Data Shape**: {df.shape}')
 
-            # Display data description
             st.subheader('Data Description')
-            st.write(df.describe(include='all'))  # include='all' provides description for all types of columns
+            st.write(df.describe(include='all'))  
 
-            # Display data info directly
             st.subheader('Data Information')
             buffer = io.StringIO()
             df.info(buf=buffer)
             st.text(buffer.getvalue())
-
-            # Display the number of missing values
             missing_values = df.isnull().sum().to_dict()
             st.subheader('**Total Missing Values**')
             for column, missing in missing_values.items():
@@ -156,11 +151,6 @@ def apply_all_functions(df):
 # Main function
 def main():
     st.title('Automated Pre-processing')
-    st.markdown("""
-    ## Automated Pre-processing of Data
-    Upload your dataset and select columns to remove, handle missing values, duplicates, and outliers.
-    """)
-
     # File uploader
     uploaded_file = st.file_uploader("Upload a CSV or Excel file here!", type=['csv', 'xlsx'])
 
