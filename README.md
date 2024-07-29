@@ -4,15 +4,14 @@ Welcome to the Automated Data Pre-processing application! This Streamlit applica
 
 ## Features
 
-- **Load Data**: Upload and preview your CSV or Excel files.
-- **Remove Duplicates**: Identify and remove duplicate rows from your data.
-- **Handle Missing Values**:
-  - Fill missing numeric values with mean or median.
-  - Fill missing categorical values with mode.
-- **Remove Outliers**: Remove outliers using the Interquartile Range (IQR) method.
-- **Apply All Functions Together**: Apply all the preprocessing steps in one go.
-- **Download Processed Data**: Download the cleaned and processed data as a CSV file.
-
+- **File Upload**: Upload CSV or Excel files.
+- **Data Preview**: View a preview and description of the uploaded data.
+- **Datetime Conversion**: Convert selected columns to datetime format.
+- **Remove Duplicates**: Remove duplicate rows from the data.
+- **Handle Missing Values**: Fill missing values in numeric columns with mean or median, and in categorical columns with mode.
+- **Remove Outliers**: Remove outliers in numeric columns using the Interquartile Range (IQR) method.
+- **Download Processed Data**: Download the final processed DataFrame as a CSV file.
+- 
 ## Demo
 
 ![Working of the application](gif/one.gif)
@@ -39,20 +38,26 @@ To run this application locally, follow these steps:
 
 ## Usage
 
-1. **Upload a File**: Use the file uploader to upload your CSV or Excel file.
-2. **Preview Data**: Preview the first few rows of your data, see data shape, description, and information.
-3. **Remove Duplicates**: Remove duplicate rows from the data.
-4. **Handle Missing Values**: Fill missing values with mean, median, or mode.
-5. **Remove Outliers**: Remove outliers from numeric columns using the IQR method.
-6. **Apply All Functions**: Apply all preprocessing steps together.
-7. **Download Processed Data**: Download the processed data as a CSV file.
+1. **Upload File**: Click on the "Browse files" button to upload a CSV or Excel file.
+
+2. **Data Preview**: After uploading, a preview of the data and its description will be displayed.
+
+3. **Datetime Conversion**: Select columns to convert to datetime format and click the "Convert Columns to Datetime" button.
+
+4. **Remove Duplicates**: Click the "Remove Duplicates" button to remove duplicate rows from the data.
+
+5. **Fill Missing Values**: Select numeric columns to fill missing values with mean or median, and categorical columns to fill with mode. Click the respective buttons to fill the missing values.
+
+6. **Remove Outliers**: Select numeric columns to remove outliers using the IQR method and click the "Remove Outliers" button.
+
+7. **Download Processed Data**: The final processed DataFrame will be displayed. Click the "Download Cleaned Data (CSV)" link to download the data as a CSV file.
 
 ## Example
 
 Here is a simple example of how to use the application:
 
 1. Upload your data file.
-2. Select the columns for filling missing values with mean, median, or mode.
+2. Select the columns for converting datetime,filling missing values with mean, median, or mode.
 3. Remove outliers from the numeric columns.
 4. Download the cleaned data.
 
@@ -64,3 +69,4 @@ I have provided a [Sample Data](sample_data) which you can check out
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
